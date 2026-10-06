@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DinoLearn: Petualangan Huruf & Angka | Game Edukasi Anak</title>
+  <meta name="description" content="Portal Game Edukasi Anak Interaktif DinoLearn: Petualangan Huruf & Angka. Belajar sambil bermain mengenal huruf, angka, hewan, dan pola dengan 5 stage seru!">
+  
+  <!-- Google Fonts: Fredoka & Nunito untuk tampilan kartun ramah anak -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦖</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Canvas Confetti untuk Efek Kemenangan -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- 1. HEADER & KONTROL AUDIO -->
+    <header class="main-header" id="mainHeader">
+      <div class="header-left">
+        <button class="nav-btn btn-home" id="btnHome" title="Kembali ke Menu Utama" aria-label="Menu Utama">
+          <span class="btn-icon">🏠</span>
+          <span class="btn-text">Menu</span>
+        </button>
+        <button class="nav-btn btn-map" id="btnMapNav" title="Peta Petualangan" style="display: none;">
+          <span class="btn-icon">🗺️</span>
+          <span class="btn-text">Peta</span>
+        </button>
+      </div>
+
+      <div class="header-brand">
+        <div class="logo-dino-badge">
+          <span class="badge-dino-icon">🦖</span>
+          <h1 class="logo-text">
+            <span class="color-coral">Dino</span><span class="color-yellow">Learn</span>
+            <span class="logo-sub">Petualangan Huruf & Angka</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Player Mini Profile (muncul saat sedang main) -->
+        <div class="player-hud-pill" id="playerHudPill" style="display: none;">
+          <div class="hud-avatar-icon" id="hudAvatarIcon">🦖</div>
+          <span class="hud-player-name" id="hudPlayerName">Pemain</span>
+        </div>
+
+        <!-- Bintang Indikator -->
+        <div class="star-badge" id="starBadge" title="Total Bintang Kamu">
+          <span class="star-icon">⭐</span>
+          <span class="star-count" id="headerStarCount">0</span>
+        </div>
+
+        <!-- Leaderboard Shortcut -->
+        <button class="nav-btn btn-leaderboard-top" id="btnOpenLeaderboard" title="Lihat Papan Skor Juara">
+          <span class="btn-icon">🏆</span>
+          <span class="btn-text">Juara</span>
+        </button>
+
+        <!-- Audio Controls (Jelas & Mudah Dinyalakan/Dimatikan) -->
+        <div class="audio-control-group">
+          <button class="sound-toggle-btn active-audio" id="btnBgmToggle" title="Musik Latar: Aktif (Klik untuk Matikan/Nyalakan)" aria-label="Toggle Musik">
+            <span class="audio-icon" id="bgmIcon">🎵</span>
+            <span class="audio-label" id="bgmLabel">Musik: ON</span>
+          </button>
+          <button class="sound-toggle-btn active-audio" id="btnVoiceToggle" title="Suara Narasi: Aktif (Klik untuk Matikan/Nyalakan)" aria-label="Bantuan Suara">
+            <span class="audio-icon" id="voiceIcon">🗣️</span>
+            <span class="audio-label" id="voiceLabel">Suara: ON</span>
+          </button>
+          <button class="sound-toggle-btn active-audio" id="btnSfxToggle" title="Efek Suara: Aktif (Klik untuk Matikan/Nyalakan)" aria-label="Toggle Efek Suara">
+            <span class="audio-icon" id="sfxIcon">🔊</span>
+            <span class="audio-label" id="sfxLabel">SFX: ON</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT SCREENS -->
+    <main class="main-content">
+      
+      <!-- ==============================================
+           SCREEN 1: REGISTRASI & WELCOME SCREEN
+           ============================================== -->
+      <section class="screen-view active" id="welcomeScreen">
+        <div class="welcome-card card-pop">
+          <!-- Dekorasi Floating -->
+          <div class="floating-decor decor-cloud-1">☁️</div>
+          <div class="floating-decor decor-cloud-2">☁️</div>
+          <div class="floating-decor decor-star-1">✨</div>
+          <div class="floating-decor decor-star-2">🌟</div>
+
+          <div class="welcome-header">
+            <div class="banner-title">
+              <span class="subtitle-pill">🌟 Game Edukasi Anak Interaktif 🌟</span>
+              <h2 class="hero-title">Ayo Berpetualang Bersama Dino Cilik! 🦕</h2>
+              <p class="hero-desc">Pilih teman dino kesayanganmu, masukkan namamu, dan selesaikan 5 pulau petualangan penuh huruf, angka, dan kejutan seru!</p>
+            </div>
+          </div>
+
+          <form id="playerRegForm" class="player-reg-form" onsubmit="return false;">
+            <!-- Input Nama -->
+            <div class="form-group">
+              <label for="playerNameInput" class="form-label">
+                <span class="label-icon">✍️</span> Siapa Namamu, Petualang Cilik?
+              </label>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="playerNameInput" 
+                  class="styled-input" 
+                  placeholder="Ketik namamu di sini (misal: Alvaro / Alya)" 
+                  maxlength="18"
+                  autocomplete="off"
+                  required
+                >
+                <button type="button" class="btn-clear-name" id="btnClearName" title="Hapus">✕</button>
+              </div>
+            </div>
+
+            <!-- Pemilihan Avatar Dino -->
+            <div class="avatar-selection-section">
+              <label class="form-label">
+                <span class="label-icon">🦖</span> Pilih Sahabat Dinomu:
+              </label>
+              <div class="avatar-grid" id="avatarGrid">
+                <!-- Avatar card 1: Rexy -->
+                <div class="avatar-card selected" data-avatar="rexy" data-name="Rexy si Hijau" data-icon="🦖">
+                  <div class="avatar-visual bg-mint">
+                    <span class="avatar-emoji">🦖</span>
+                  </div>
+                  <span class="avatar-title">Rexy</span>
+                  <span class="avatar-badge">Ceria & Berani</span>
+                </div>
+
+                <!-- Avatar card 2: Tricey -->
+                <div class="avatar-card" data-avatar="tricey" data-name="Tricey si Biru" data-icon="🦕">
+                  <div class="avatar-visual bg-sky">
+                    <span class="avatar-emoji">🦕</span>
+                  </div>
+                  <span class="avatar-title">Tricey</span>
+                  <span class="avatar-badge">Ramah & Sabar</span>
+                </div>
+
+                <!-- Avatar card 3: Stego -->
+                <div class="avatar-card" data-avatar="stego" data-name="Stego si Kuning" data-icon="🐊">
+                  <div class="avatar-visual bg-yellow">
+                    <span class="avatar-emoji">🐊</span>
+                  </div>
+                  <span class="avatar-title">Stego</span>
+                  <span class="avatar-badge">Jago Hitung</span>
+                </div>
+
+                <!-- Avatar card 4: Ptero -->
+                <div class="avatar-card" data-avatar="ptero" data-name="Ptero si Oranye" data-icon="🦅">
+                  <div class="avatar-visual bg-coral">
+                    <span class="avatar-emoji">🦅</span>
+                  </div>
+                  <span class="avatar-title">Ptero</span>
+                  <span class="avatar-badge">Cepat & Lincah</span>
+                </div>
+
+                <!-- Avatar card 5: Bronto -->
+                <div class="avatar-card" data-avatar="bronto" data-name="Bronto si Ungu" data-icon="🐢">
+                  <div class="avatar-visual bg-purple">
+                    <span class="avatar-emoji">🐢</span>
+                  </div>
+                  <span class="avatar-title">Bronto</span>
+                  <span class="avatar-badge">Penyayang</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tombol Action Mulai -->
+            <div class="form-actions">
+              <button type="submit" id="btnStartGame" class="btn-play-bounce">
+                <span class="btn-play-icon">🚀</span>
+                <span class="btn-play-text">Mulai Main Sekarang!</span>
+                <span class="btn-play-sparkle">✨</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Quick Actions Footer -->
+          <div class="welcome-footer-links">
+            <button class="text-link-btn" id="btnWelcomeLeaderboard">
+              🏆 Lihat Papan Juara Tertinggi
+            </button>
+            <span class="dot-divider">•</span>
+            <button class="text-link-btn" id="btnHowToPlay">
+              📖 Cara Bermain & Hadiah
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           SCREEN 2: PETA PETUALANGAN (STAGE SELECTION)
+           ============================================== -->
+      <section class="screen-view" id="mapScreen">
+        <div class="stage-map-container">
+          <div class="map-banner">
+            <div class="map-banner-info">
+              <h2 class="map-title">🗺️ Peta Petualangan Dino</h2>
+              <p class="map-subtitle">Taklukkan 5 zona seru untuk dinobatkan sebagai Juara Petualang Cilik!</p>
+            </div>
+            <div class="map-banner-stats">
+              <div class="stat-box">
+                <span class="stat-label">Total Bintang</span>
+                <span class="stat-val" id="mapTotalStars">⭐ 0/15</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Tahap Selesai</span>
+                <span class="stat-val" id="mapStagesCompleted">0 dari 5</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map Path / Node List -->
+          <div class="stage-nodes-wrapper">
+            <!-- Stage 1 -->
+            <div class="stage-node-card unlocked current" id="stageCard1" data-stage="1">
+              <div class="node-badge-order">Tahap 1</div>
+              <div class="node-icon-circle bg-mint">
+                <span class="node-emoji">🌲</span>
+              </div>
+              <div class="node-details">
+                <h3 class="node-title">Hutan Huruf</h3>
+                <p class="node-desc">Mengenal huruf alfabet, kata benda ceria & bunyi vokal.</p>
+                <div class="node-stars" id="nodeStars1">
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                </div>
+              </div>
+              <button class="btn-node-action" data-stage="1">Mulai ➔</button>
+            </div>
+
+            <!-- Path Line -->
+            <div class="map-connector-line">
+              <span class="connector-footprints">🐾 🐾 🐾</span>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="stage-node-card locked" id="stageCard2" data-stage="2">
+              <div class="node-badge-order">Tahap 2</div>
+              <div class="node-icon-circle bg-sky">
+                <span class="node-emoji">🦁</span>
+              </div>
+              <div class="node-details">
+                <h3 class="node-title">Lembah Hewan</h3>
+                <p class="node-desc">Tebak nama hewan, suara lucu & habitat para dino cilik.</p>
+                <div class="node-stars" id="nodeStars2">
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                </div>
+              </div>
+              <button class="btn-node-action" data-stage="2" disabled>Terkunci 🔒</button>
+            </div>
+
+            <!-- Path Line -->
+            <div class="map-connector-line">
+              <span class="connector-footprints">🐾 🐾 🐾</span>
+            </div>
+
+            <!-- Stage 3 -->
+            <div class="stage-node-card locked" id="stageCard3" data-stage="3">
+              <div class="node-badge-order">Tahap 3</div>
+              <div class="node-icon-circle bg-yellow">
+                <span class="node-emoji">⛰️</span>
+              </div>
+              <div class="node-details">
+                <h3 class="node-title">Gunung Angka</h3>
+                <p class="node-desc">Menghitung telur dino, buah lezat & penjumlahan seru.</p>
+                <div class="node-stars" id="nodeStars3">
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                </div>
+              </div>
+              <button class="btn-node-action" data-stage="3" disabled>Terkunci 🔒</button>
+            </div>
+
+            <!-- Path Line -->
+            <div class="map-connector-line">
+              <span class="connector-footprints">🐾 🐾 🐾</span>
+            </div>
+
+            <!-- Stage 4 -->
+            <div class="stage-node-card locked" id="stageCard4" data-stage="4">
+              <div class="node-badge-order">Tahap 4</div>
+              <div class="node-icon-circle bg-purple">
+                <span class="node-emoji">🔮</span>
+              </div>
+              <div class="node-details">
+                <h3 class="node-title">Gua Pola</h3>
+                <p class="node-desc">Menebak urutan warna, bentuk geometri & deret rahasia.</p>
+                <div class="node-stars" id="nodeStars4">
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                </div>
+              </div>
+              <button class="btn-node-action" data-stage="4" disabled>Terkunci 🔒</button>
+            </div>
+
+            <!-- Path Line -->
+            <div class="map-connector-line">
+              <span class="connector-footprints">🐾 🐾 🐾</span>
+            </div>
+
+            <!-- Stage 5 -->
+            <div class="stage-node-card locked" id="stageCard5" data-stage="5">
+              <div class="node-badge-order">Tahap 5</div>
+              <div class="node-icon-circle bg-coral">
+                <span class="node-emoji">🏝️</span>
+              </div>
+              <div class="node-details">
+                <h3 class="node-title">Pulau Juara</h3>
+                <p class="node-desc">Tantangan gabungan huruf & angka menuju piala kemegahan!</p>
+                <div class="node-stars" id="nodeStars5">
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                  <span class="star-dot">☆</span>
+                </div>
+              </div>
+              <button class="btn-node-action" data-stage="5" disabled>Terkunci 🔒</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           SCREEN 3: ARENA PLAY ZONE (QUIZ & PUZZLE)
+           ============================================== -->
+      <section class="screen-view" id="playScreen">
+        <div class="play-zone-container">
+          
+          <!-- Top Play Bar: Stage Info, Timer & Question Steps -->
+          <div class="play-hud-bar">
+            <div class="hud-stage-info">
+              <span class="hud-stage-tag" id="currentStageTag">🌲 Stage 1: Hutan Huruf</span>
+              <span class="hud-timer-pill" id="hudTimer">⏱️ 00:00</span>
+            </div>
+
+            <!-- Step Indicators (5 Soal per Stage) -->
+            <div class="question-progress-dots" id="questionDots">
+              <span class="dot active">1</span>
+              <span class="dot">2</span>
+              <span class="dot">3</span>
+              <span class="dot">4</span>
+              <span class="dot">5</span>
+            </div>
+
+            <div class="hud-score-mini">
+              <span class="hud-live-stars" id="hudLiveStars">⭐ +0</span>
+            </div>
+          </div>
+
+          <!-- Main Game Card / Puzzle Card -->
+          <div class="puzzle-card-frame" id="puzzleCard">
+            <!-- Question Header with Voice button & Indonesian Narrator -->
+            <div class="question-header">
+              <div class="question-speech-bubble">
+                <button class="btn-voice-read" id="btnReadQuestion" title="Dengarkan Soal dalam Bahasa Indonesia">
+                  <span class="voice-bubble-icon">🔊</span>
+                  <span class="voice-label">Dengarkan</span>
+                </button>
+                <div class="question-prompt-wrap">
+                  <div class="narrator-badge">
+                    <span class="narrator-icon">🦕</span>
+                    <span class="narrator-text">Suara Ibu Dino Membacakan:</span>
+                  </div>
+                  <h2 class="question-prompt-text" id="questionText">
+                    Soal sedang dimuat...
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visual Display Area (Dino animation, big picture, count boxes, interactive elements) -->
+            <div class="question-visual-area" id="questionVisualArea">
+              <!-- Content rendered dynamically via JS -->
+            </div>
+
+            <!-- Answer Options Zone (Clickable interactive cards with bounce & flip) -->
+            <div class="answer-options-grid" id="answerOptionsGrid">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Interactive Feedback Toast / Banner -->
+            <div class="feedback-banner" id="feedbackBanner" style="display: none;">
+              <div class="feedback-icon" id="feedbackIcon">🎉</div>
+              <div class="feedback-text-wrap">
+                <div class="feedback-title" id="feedbackTitle">Luar Biasa!</div>
+                <div class="feedback-desc" id="feedbackDesc">Jawabanmu tepat sekali!</div>
+              </div>
+              <button class="btn-next-question" id="btnNextQuestion">Lanjut Soal Berikutnya ➔</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           SCREEN 4: TABEL PROGRESS & LEADERBOARD LENGKAP
+           ============================================== -->
+      <section class="screen-view" id="leaderboardScreen">
+        <div class="leaderboard-container">
+          <div class="leaderboard-header">
+            <div class="leaderboard-title-group">
+              <h2 class="section-title">🏆 Papan Peringkat Bintang Juara</h2>
+              <p class="section-subtitle">Rekapitulasi nilai petualang hebat DinoLearn! Terus kumpulkan bintang tertinggi!</p>
+            </div>
+            <div class="leaderboard-actions">
+              <button class="nav-btn btn-back-game" id="btnLeaderboardBack">
+                <span>◀ Kembali</span>
+              </button>
+              <button class="btn-reset-scores" id="btnResetLeaderboard" title="Reset Data Lokal">
+                <span>🔄 Hapus Riwayat</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Stats Highlights -->
+          <div class="leaderboard-highlight-cards">
+            <div class="stat-badge-card gold">
+              <span class="badge-icon">🥇</span>
+              <span class="badge-title">Juara 1 Hari Ini</span>
+              <span class="badge-player" id="topPlayer1">-</span>
+            </div>
+            <div class="stat-badge-card star">
+              <span class="badge-icon">⭐</span>
+              <span class="badge-title">Bintang Tertinggi</span>
+              <span class="badge-player" id="topStarsCount">15 Bintang</span>
+            </div>
+            <div class="stat-badge-card speed">
+              <span class="badge-icon">⚡</span>
+              <span class="badge-title">Waktu Tercepat</span>
+              <span class="badge-player" id="topBestTime">01:45</span>
+            </div>
+          </div>
+
+          <!-- Tabel Data Responsif -->
+          <div class="table-responsive-wrapper">
+            <table class="styled-leaderboard-table" id="leaderboardTable">
+              <thead>
+                <tr>
+                  <th class="th-rank">Peringkat</th>
+                  <th class="th-player">Pemain & Sahabat Dino</th>
+                  <th class="th-stars">Total Bintang</th>
+                  <th class="th-time">Waktu Selesai</th>
+                  <th class="th-status">Tahap Selesai</th>
+                  <th class="th-date">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody">
+                <!-- Diisi secara dinamis oleh JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==============================================
+         5. MODAL & POP-UP KEMENANGAN
+         ============================================== -->
+    
+    <!-- MODAL 1: Kemenangan Tiap Stage (Stage Complete) -->
+    <div class="modal-overlay" id="stageWinModal" style="display: none;">
+      <div class="modal-card modal-bounce">
+        <div class="modal-badge-top">🌟 TAHAP SELESAI! 🌟</div>
+        
+        <div class="modal-dino-celebration">
+          <span class="dancing-dino" id="stageWinDino">🦖</span>
+        </div>
+
+        <h3 class="modal-title" id="stageWinTitle">Hebat Sekali, Kamu Pintar!</h3>
+        <p class="modal-desc" id="stageWinDesc">Kamu berhasil menyelesaikan semua soal di Hutan Huruf dengan sempurna!</p>
+
+        <!-- Star animation row -->
+        <div class="stage-star-earning-row" id="stageEarningStars">
+          <span class="earned-star star-pop-1">⭐</span>
+          <span class="earned-star star-pop-2">⭐</span>
+          <span class="earned-star star-pop-3">⭐</span>
+        </div>
+
+        <div class="modal-stats-summary">
+          <div class="mini-stat">
+            <span class="label">Bintang Didapat</span>
+            <span class="val" id="stageStarsEarnedText">+3 Bintang</span>
+          </div>
+          <div class="mini-stat">
+            <span class="label">Waktu Stage</span>
+            <span class="val" id="stageTimeText">01:12</span>
+          </div>
+        </div>
+
+        <div class="modal-button-group">
+          <button class="btn-modal-sec" id="btnStageWinToMap">
+            🗺️ Ke Peta
+          </button>
+          <button class="btn-modal-pri" id="btnNextStage">
+            Lanjut Tahap Berikutnya! 🚀
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: GRAND VICTORY (Pulau Juara Selesai / Tamat!) -->
+    <div class="modal-overlay grand-victory-overlay" id="grandVictoryModal" style="display: none;">
+      <div class="modal-card grand-card">
+        <div class="trophy-bounce">🏆</div>
+        
+        <h2 class="grand-title">SELAMAT! KAMU JUARA DINOLEARN! 🎊</h2>
+        <p class="grand-subtitle">
+          Semua 5 tahapan petualangan telah ditaklukkan dengan luar biasa!
+        </p>
+
+        <!-- Interaktif Sertifikat Penghargaan Digital -->
+        <div class="certificate-frame" id="certificateCard">
+          <div class="cert-border">
+            <div class="cert-header">
+              <span class="cert-logo">🦖 DinoLearn Edu-Game</span>
+              <span class="cert-badge">PIAGAM PENGHARGAAN RESMI</span>
+            </div>
+            <div class="cert-body">
+              <p class="cert-text-diberikan">Diberikan dengan bangga kepada:</p>
+              <h3 class="cert-player-name" id="certPlayerName">Alvaro si Petualang</h3>
+              <p class="cert-text-prestasi">
+                Atas keberhasilan menaklukkan <strong>Hutan Huruf, Lembah Hewan, Gunung Angka, Gua Pola, dan Pulau Juara</strong> dengan prestasi luar biasa!
+              </p>
+              <div class="cert-details-grid">
+                <div class="cert-pill">
+                  <span class="k">Sahabat Dino:</span>
+                  <span class="v" id="certDinoName">Rexy si Hijau 🦖</span>
+                </div>
+                <div class="cert-pill">
+                  <span class="k">Total Bintang:</span>
+                  <span class="v" id="certStars">⭐⭐⭐⭐⭐ (15/15)</span>
+                </div>
+                <div class="cert-pill">
+                  <span class="k">Total Waktu:</span>
+                  <span class="v" id="certTime">04:20</span>
+                </div>
+                <div class="cert-pill">
+                  <span class="k">Gelar:</span>
+                  <span class="v">Dino Genius Cilik 🎓</span>
+                </div>
+              </div>
+            </div>
+            <div class="cert-footer">
+              <span class="cert-sign">Tanda Tangan: Prof. Dino 🦕</span>
+              <span class="cert-date" id="certDate">Tanggal: 06 Oktober 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tombol Aksi Kemenangan Akhir -->
+        <div class="grand-actions">
+          <button class="btn-modal-pri" id="btnPrintCert">
+            🖨️ Cetak / Unduh Piagam
+          </button>
+          <button class="btn-modal-sec" id="btnGrandToLeaderboard">
+            🏆 Lihat Peringkat Juara
+          </button>
+          <button class="btn-modal-accent" id="btnPlayAgain">
+            🔄 Main Lagi dari Awal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: BANTUAN & CARA BERMAIN -->
+    <div class="modal-overlay" id="howToPlayModal" style="display: none;">
+      <div class="modal-card">
+        <h3 class="modal-title">📖 Petunjuk Bermain DinoLearn</h3>
+        <div class="how-to-list">
+          <div class="how-item">
+            <span class="how-num">1</span>
+            <div><strong>Pilih Dino & Masukkan Nama:</strong> Ketik namamu dan pilih teman dino kesukaanmu!</div>
+          </div>
+          <div class="how-item">
+            <span class="how-num">2</span>
+            <div><strong>Jelajahi 5 Tahap:</strong> Mulai dari Hutan Huruf, Lembah Hewan, Gunung Angka, Gua Pola, hingga Pulau Juara!</div>
+          </div>
+          <div class="how-item">
+            <span class="how-num">3</span>
+            <div><strong>5 Soal Setiap Tahap:</strong> Klik jawaban yang benar pada kartu interaktif bergambar ceria.</div>
+          </div>
+          <div class="how-item">
+            <span class="how-num">4</span>
+            <div><strong>Dengarkan Suara:</strong> Tekan tombol speaker 🔊 jika ingin mendengar soal dibacakan.</div>
+          </div>
+          <div class="how-item">
+            <span class="how-num">5</span>
+            <div><strong>Dapatkan Bintang & Piagam:</strong> Kumpulkan bintang emas dan bawa pulang piagam Juara DinoLearn!</div>
+          </div>
+        </div>
+        <button class="btn-modal-pri" id="btnCloseHowTo">Mengerti, Ayo Main! 🚀</button>
+      </div>
+    </div>
+
+  </div> <!-- End App Container -->
+
+  <!-- Javascript Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
